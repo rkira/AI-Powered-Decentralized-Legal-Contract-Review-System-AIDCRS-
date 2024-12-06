@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Contract Review</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background-color: #f4f4f4;
+            padding: 20px;
+            margin: 0;
+        }
+        .container {
+            max-width: 600px;
+            margin: 0 auto;
+            background-color: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+        }
+        h1 {
+            text-align: center;
+        }
+        .file-drop-area {
+            border: 2px dashed #ccc;
+            padding: 40px;
+            text-align: center;
+            border-radius: 10px;
+            cursor: pointer;
+        }
+        .file-drop-area input {
+            display: none;
+        }
+        .file-drop-area p {
+            margin: 0;
+            color: #888;
+        }
+        .uploaded-file {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 10px;
+            padding: 10px;
+            background-color: #f9f9f9;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+        }
+        .uploaded-file span {
+            font-size: 14px;
+        }
+        .remove-file {
+            color: red;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        .button {
+            display: none;
+            width: 100%;
+            padding: 10px;
+            margin-top: 20px;
+            background-color: #4CAF50;
+            color: white;
+            font-size: 16px;
+            border: none;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+        .button:hover {
+            background-color: #45a049;
+        }
+        .result {
+            margin-top: 20px; /* Space from the button */
+            width: 100%;
+            max-height: 400px; /* Limit height for long results */
+            overflow-y: auto;
+            padding: 20px;
+            background-color: #f9f9f9;
+            border-radius: 10px;
+            border: 1px solid #ccc;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            display: none;
+        }
+        .result h3 {
+            margin-top: 0;
+        }
+        .result pre {
+            white-space: pre-wrap;
+            word-wrap: break-word;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>AI Contract Review</h1>
+    <div class="file-drop-area" id="fileDropArea">
+        <input type="file" id="fileInput" accept=".pdf, .jpg, .jpeg, .png">
+        <p>Drag and drop a PDF file here, or click to upload</p>
+    </div>
+    <div class="uploaded-file" id="uploadedFile" style="display: none;">
+        <span id="fileName"></span>
+        <span class="remove-file" id="removeFile">X</span>
+    </div>
+    <button class="button" id="reviewButton">Review Contract</button>
+</div>
+
+<div class="result" id="resultContainer">
+    <h3>Review Results:</h3>
+    <pre id="resultOutput"></pre>
+</div>
+
+<script>
+    const fileInput = document.getElementById('fileInput');
+    const fileDropArea = document.getElementById('fileDropArea');
+    const reviewButton = document.getElementById('reviewButton');
+    const resultContainer = document.getElementById('resultContainer');
+    const resultOutput = document.getElementById('resultOutput');
+    const uploadedFile = document.getElementById('uploadedFile');
+    const fileName = document.getElementById('fileName');
+    const removeFile = document.getElementById('removeFile');
+    let selectedFile = null;
+
+    // Show file picker on click
+    fileDropArea.addEventListener('click', () => {
+        fileInput.click();
+    });
+
+    // Drag and drop events
+    fileDropArea.addEventListener('dragover', (event) => {
+        event.preventDefault();
+        fileDropArea.style.borderColor = '#4CAF50';
+    });
+
+    fileDropArea.addEventListener('dragleave', () => {
+        fileDropArea.style.borderColor = '#ccc';
+    });
+
+    fileDropArea.addEventListener('drop', (event) => {
+        event.preventDefault();
+        selectedFile = event.dataTransfer.files[0];
+        fileInput.files = event.dataTransfer.files;
+        handleFileSelection();
+        fileDropArea.style.borderColor = '#ccc';
+    });
+
+    // Handle file input change
+    fileInput.addEventListener('change', () => {
+        selectedFile = fileInput.files[0];
+        handleFileSelection();
+    });
+
+    // Handle file selection
+    function handleFileSelection() {
+        if (selectedFile && validateFileType(selectedFile)) {
+            fileName.textContent = selectedFile.name;
+            uploadedFile.style.display = 'flex';
+            reviewButton.style.display = 'block'; // Show the review button
+        } else {
+            alert('Please upload a valid file (.pdf, .jpg, .jpeg, .png).');
+            clearFileSelection();
+        }
+    }
+
+    // Validate file type
+    function validateFileType(file) {
+        const allowedExtensions = ['application/pdf', 'image/jpeg', 'image/png'];
+        return allowedExtensions.includes(file.type);
+    }
+
+    // Clear file selection
+    function clearFileSelection() {
+        selectedFile = null;
+        fileInput.value = ''; // Reset file input
+        uploadedFile.style.display = 'none';
+        reviewButton.style.display = 'none';
+    }
+
+    // Remove file event
+    removeFile.addEventListener('click', clearFileSelection);
+
+    // Upload and review the contract
+    reviewButton.addEventListener('click', async () => {
+        if (!selectedFile) {
+            alert('No file selected!');
+            return;
+        }
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+
+        reviewButton.disabled = true;
+        reviewButton.textContent = 'Processing...';
+
+        try {
+            const response = await fetch('/upload_contract', {
+                method: 'POST',
+                body: formData
+            });
+
+            const result = await response.json();
+            if (response.ok) {
+                resultContainer.style.display = 'block';
+                resultOutput.textContent = JSON.stringify(result.analysis, null, 2);
+            } else {
+                alert(result.error || 'Something went wrong!');
+            }
+        } catch (error) {
+            console.error(error);
+            alert('An error occurred. Please try again later.');
+        } finally {
+            reviewButton.disabled = false;
+            reviewButton.textContent = 'Review Contract';
+        }
+    });
+</script>
+
+</body>
+</html>
