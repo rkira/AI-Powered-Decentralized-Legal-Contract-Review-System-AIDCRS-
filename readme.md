@@ -24,6 +24,7 @@ libraries and dependencies:
 - In Directory ..\model, run "train_bert_model.py" to train model and change path locations according to your system.
 
 5)Start Application
+
 NOTE:CHECK and EDIT all path location and add your path in required fields. 
 - Execute server.py
 - Open localhost site and test.
