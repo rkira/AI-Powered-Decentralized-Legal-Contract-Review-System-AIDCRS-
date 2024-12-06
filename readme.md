@@ -23,7 +23,7 @@ libraries and dependencies:
 4)train AI model.
 - In Directory ..\model, run "train_bert_model.py" to train model and change path locations according to your system.
 
-)Start Application
+5)Start Application
 NOTE:CHECK and EDIT all path location and add your path in required fields. 
 - Execute server.py
 - Open localhost site and test.
