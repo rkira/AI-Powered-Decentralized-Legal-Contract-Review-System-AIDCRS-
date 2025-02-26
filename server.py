@@ -32,12 +32,12 @@ contract_address = "Your contract address"
 contract = web3.eth.contract(address=contract_address, abi=contract_abi)
 
 # Load your AI model and tokenizer
-model_name = "add your path/model/saved_model"  # Path to the trained AI model
+model_name = "./model/saved_model"  # Path to the trained AI model
 tokenizer = AutoTokenizer.from_pretrained(model_name)
 model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
 # Load the dataset from CSV for contract risk analysis
-dataset_path = "add your path/model/training_data/risk.csv"
+dataset_path = "./model/training_data/risk.csv"
 df = pd.read_csv(dataset_path)
 
 # List of labels corresponding to your model's outputs
