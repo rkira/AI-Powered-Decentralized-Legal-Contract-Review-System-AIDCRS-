@@ -25,7 +25,7 @@ libraries and dependencies:
 
 5)Start Application
 
-NOTE:CHECK and EDIT all path location and add your path in required fields. 
+NOTE:Ganache and IPFS CLI or IPFS Desktop must bue running in the background before starting the server.
 - Execute server.py
 - Open localhost site and test.
 
